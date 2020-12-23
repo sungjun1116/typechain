@@ -1,12 +1,6 @@
 import * as CryptoJs from "crypto-js";
 
 class Block {
-  public index: number;
-  public hash: string;
-  public previousHash: string;
-  public data: string;
-  public timestamp: number;
-
   // 인스턴스 생성없이도 호출가능한 것이 static 
   static calculateBlockHash = (
     index: number,
@@ -15,6 +9,18 @@ class Block {
     timestamp: number
   ): string =>
     CryptoJs.SHA256(index + previousHash + timestamp + data).toString();
+
+  static validateStructure = (aBlock: Block): boolean =>
+    typeof aBlock.index === "number" &&
+    typeof aBlock.hash === "string" &&
+    typeof aBlock.previousHash === "string" &&
+    typeof aBlock.timestamp === "string";
+
+  public index: number;
+  public hash: string;
+  public previousHash: string;
+  public data: string;
+  public timestamp: number;
 
   constructor(
     index: number,
@@ -61,6 +67,30 @@ const createNewBlock = (data: string): Block => {
   );
   return newBlock;
 };
-console.log(createNewBlock("hello"), createNewBlock("bye bye"));
+
+const getHashForBlcok = (aBlock: Block): string => Block.calculateBlockHash(aBlock.index, aBlock.previousHash, aBlock.data, aBlock.timestamp)
+
+const isBlockValid = (
+  candidateBlcok: Block,
+  previousBlock: Block
+): boolean => {
+  if (Block.validateStructure(candidateBlcok)) {
+    return false;
+  } else if (previousBlock.index + 1 !== candidateBlcok.index) {
+    return false;
+  } else if (previousBlock.hash !== candidateBlcok.previousHash) {
+    return false;
+  } else if (getHashForBlcok(candidateBlcok) !== candidateBlcok.hash) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+const addBlock = (candidateBlock: Block): void => {
+  if (isBlockValid(candidateBlock, getLatestBlock())) {
+    blockchain.push(candidateBlock)
+  }
+}
 
 export { };
